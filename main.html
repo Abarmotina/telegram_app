@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Card Game</title>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                text-align: center;
+                background: linear-gradient(135deg, #121212, #1e1e2e);
+                color: white;
+                margin: 0;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2.5em;
+                text-transform: uppercase;
+                margin-bottom: 20px;
+                color: #ffcc00;
+            }
+
+            .card-container {
+                display: flex;
+                justify-content: center;
+                gap: 40px;
+                margin-top: 20px;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            .card {
+                width: 220px;
+                padding: 20px;
+                border-radius: 15px;
+                background: rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+                transition: transform 0.3s ease-in-out;
+                backdrop-filter: blur(10px);
+            }
+
+            .card h3 {
+                margin: 0 0 10px;
+                font-size: 1.5em;
+                text-transform: uppercase;
+            }
+
+            .card p {
+                font-size: 1.1em;
+                margin: 5px 0;
+                padding: 6px;
+                border-radius: 5px;
+            }
+
+            .score {
+                font-size: 1.4em;
+                font-weight: bold;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 10px auto 0;
+            }
+
+
+            .highlight-win {
+                background: rgba(0, 255, 0, 0.5);
+                border-left: 4px solid #0f0;
+            }
+
+            .highlight-lose {
+                background: rgba(255, 0, 0, 0.5);
+                border-left: 4px solid #f00;
+            }
+
+            .highlight-draw {
+                background: rgba(255, 255, 0, 0.5); /* Р–РѕРІС‚РёР№ РєРѕР»С–СЂ */
+                border-left: 4px solid #ff0; /* Р–РѕРІС‚Р° Р»С–РЅС–СЏ */
+            }
+
+
+            .animate-turn {
+                transform: scale(1.1);
+            }
+
+            .buttons {
+                margin-top: 20px;
+            }
+
+            .buttons button {
+                background: #ff9800;
+                color: white;
+                border: none;
+                padding: 12px 25px;
+                margin: 5px;
+                border-radius: 10px;
+                font-size: 1.1em;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+
+
+            .buttons button:hover {
+                background: #e68900;
+            }
+
+            #new-game {
+                background: #4CAF50;
+                color: white;
+                border: none;
+                padding: 12px 25px;
+                margin: 10px;
+                border-radius: 10px;
+                font-size: 1.1em;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+
+            #new-game:hover {
+                background: #45a049;
+            }
+
+            .legendary {
+                border: 3px solid gold;
+                box-shadow: 0 0 15px gold;
+            }
+            .epic {
+                border: 3px solid purple;
+                box-shadow: 0 0 15px purple;
+            }
+
+            #result {
+                font-size: 1.8em;
+                margin-top: 20px;
+                font-weight: bold;
+            }
+
+            @keyframes shake {
+                0% { transform: translateX(0); }
+                20% { transform: translateX(-5px); }
+                40% { transform: translateX(5px); }
+                60% { transform: translateX(-5px); }
+                80% { transform: translateX(5px); }
+                100% { transform: translateX(0); }
+            }
+        </style>
+    </head>
+    <body>
+        <audio id="click-sound" src="click.mp3"></audio>
+        <audio id="win-sound" src="win.mp3"></audio>
+        <audio id="lose-sound" src="lose.mp3"></audio>
+        <audio id="draw-sound" src="draw.mp3"></audio>
+
+        <div id="game-interface" class="hidden">
+            <h1>Card Game</h1>
+            <p id="turn-indicator" style="font-size: 1.5em; font-weight: bold; margin-bottom: 10px; color: #ffcc00;">Ваш хід!</p>
+            <div class="card-container">
+                <div id="player-card" class="card"></div>
+                <div id="opponent-card" class="card"></div>
+            </div>
+            <div class="buttons" id="attribute-buttons"></div>
+        </div>
+        <div class="buttons">
+            <button id="new-game">Start New Game</button>
+        </div>
+        <div id="game-interface" class="hidden">
+            <p id="result"></p>
+        </div>
+    <script>
+        class Card {
+            constructor(name, attributes, rarity) {
+                this.name = name;
+                this.attributes = attributes;
+                this.rarity = rarity;
+            }
+        }
+
+        class Game {
+            constructor(playerDeck, opponentDeck) {
+                this.playerDeck = playerDeck;
+                this.opponentDeck = opponentDeck;
+                this.rounds = 0;
+                this.maxRounds = 4;
+                this.playerScore = 0;
+                this.opponentScore = 0;
+                this.usedAttributes = new Map();
+                this.currentPlayer = 'player';
+                this.messages = [
+                    "Гарний вибір!", "Непоганий хід!", "Цікава стратегія!", 
+                    "Цей раунд був жорсткий!", "Ти на крок попереду!", "Це буде важка битва!"
+                ];
+            }
+
+            playRound(chosenAttribute) {
+                if (this.rounds >= this.maxRounds) {
+                    return 'Game Over';
+                }
+
+                if (this.usedAttributes.has(chosenAttribute)) {
+                    return 'Attribute already used';
+                }
+
+                const button = document.getElementById(`btn-${chosenAttribute}`);
+                if (button) {
+                    button.disabled = true;
+                    button.style.opacity = "0.5";
+                }
+                
+                const playerCard = this.playerDeck[0];
+                const opponentCard = this.opponentDeck[0];
+                const playerValue = playerCard.attributes[chosenAttribute] || 0;
+                const opponentValue = opponentCard.attributes[chosenAttribute] || 0;
+                
+                let result;
+
+                if (playerValue > opponentValue) {
+                    this.playerScore++;
+                    result = 'player';
+                } else if (playerValue < opponentValue) {
+                    this.opponentScore++;
+                    result = 'opponent';
+                } else {
+                    result = 'draw';
+                }
+                
+                this.usedAttributes.set(chosenAttribute, { result, playerValue, opponentValue });
+                this.currentPlayer = this.currentPlayer === 'player' ? 'opponent' : 'player';
+                updateUI(playerCard, opponentCard);
+                
+                if (this.rounds === this.maxRounds) {
+                    return this.getFinalResult();
+                }
+
+                this.rounds++;
+
+                // Р”РѕРґР°С”РјРѕ РІРёРїР°РґРєРѕРІРёР№ РєРѕРјРµРЅС‚Р°СЂ
+                document.getElementById('result').innerText = this.messages[Math.floor(Math.random() * this.messages.length)];
+
+                return { result, playerCard, opponentCard, chosenAttribute };
+            }
+
+            getFinalResult() {
+                if (this.playerScore > this.opponentScore) {
+                    playSound("win-sound");
+                    setTimeout(() => document.getElementById("game-interface").classList.add("hidden"), 2000);
+                    return "🎉 Гравець переміг! 🏆";
+                }
+                if (this.playerScore < this.opponentScore) {
+                    playSound("lose-sound");
+                    setTimeout(() => document.getElementById("game-interface").classList.add("hidden"), 2000);
+                    return "💀 Опонент виграв! 💀";
+                }
+                playSound("draw-sound");
+                setTimeout(() => document.getElementById("game-interface").classList.add("hidden"), 2000);
+                return "🤝 Нічия! Обидва гідні суперники!";
+            }
+        }
+
+        const card1 = new Card('Spider-Man', { intelligence: 85, strength: 75, speed: 90, agility: 88, special: 80, combat: 87 }, 'common');
+        const card2 = new Card('Green Goblin', { intelligence: 80, strength: 70, speed: 78, agility: 80, special: 85, combat: 75 }, 'common');
+        const card3 = new Card('Iron Man', { intelligence: 95, strength: 80, speed: 75, agility: 70, special: 85, combat: 80 }, 'common');
+        const card4 = new Card('Hulk', { intelligence: 65, strength: 98, speed: 60, agility: 65, special: 75, combat: 90 }, 'common');
+        const card5 = new Card('Captain America', { intelligence: 82, strength: 80, speed: 82, agility: 85, special: 75, combat: 88 }, 'common');
+        const card6 = new Card('Black Widow', { intelligence: 78, strength: 70, speed: 85, agility: 90, special: 72, combat: 85 }, 'common');
+        const card7 = new Card('Hawkeye', { intelligence: 75, strength: 68, speed: 83, agility: 87, special: 70, combat: 83 }, 'common');
+
+        const card8 = new Card('Venom', { intelligence: 80, strength: 90, speed: 85, agility: 78, special: 87, combat: 90 }, 'epic');
+        const card9 = new Card('Doctor Strange', { intelligence: 98, strength: 72, speed: 80, agility: 85, special: 100, combat: 85 }, 'epic');
+
+        const card10 = new Card('Thor', { intelligence: 85, strength: 100, speed: 88, agility: 82, special: 100, combat: 95 }, 'legendary');
+
+        
+        const allCards = [card1, card2, card3, card4, card5, card6, card7, card8, card9, card10];
+
+        function getRandomCard(excludeCard = null) {
+            let availableCards = allCards.filter(card => card !== excludeCard); 
+            return availableCards[Math.floor(Math.random() * availableCards.length)];
+        }
+
+        const playerCard = getRandomCard(); 
+        const opponentCard = getRandomCard(playerCard);
+
+        const playerDeck = [playerCard];
+        const opponentDeck = [opponentCard];
+
+        const game = new Game(playerDeck, opponentDeck);
+
+        function updateUI(playerCard, opponentCard) {
+            const title = document.querySelector("h1");
+
+            document.getElementById('player-card').className = `card ${playerCard.rarity}`;
+            document.getElementById('opponent-card').className = `card ${opponentCard.rarity}`;
+
+            const turnIndicator = document.getElementById("turn-indicator");
+            if (game.currentPlayer === 'player') {
+                turnIndicator.innerText = "Ваш хід!";
+                document.getElementById('player-card').style.border = "3px solid #ffffff";
+                document.getElementById('opponent-card').style.border = "none";
+            } else {
+                turnIndicator.innerText = "Хід суперника!";
+                document.getElementById('player-card').style.border = "none";
+                document.getElementById('opponent-card').style.border = "3px solid #ffffff";
+            }
+
+            if (game.rounds === 0) {
+                title.innerText = "🔥 Гра почалася!";
+            } else if (game.rounds === game.maxRounds) {
+                title.innerText = game.getFinalResult();
+            } else {
+                title.innerText = `Раунд ${game.rounds} / ${game.maxRounds}`;
+            }
+
+            const rarityColors = {
+                "common": "rgba(255, 255, 255, 0.1)", 
+                "epic": "rgba(128, 0, 128, 0.5)", // Р¤С–РѕР»РµС‚РѕРІРёР№ РґР»СЏ РµРїС–С‡РЅРёС… РєР°СЂС‚
+                "legendary": "rgba(255, 215, 0, 0.5)" // Р—РѕР»РѕС‚РёР№ РґР»СЏ Р»РµРіРµРЅРґР°СЂРЅРёС…
+            };
+
+            document.getElementById('player-card').style.background = rarityColors[playerCard.rarity] || "rgba(255, 255, 255, 0.1)";
+            document.getElementById('opponent-card').style.background = rarityColors[opponentCard.rarity] || "rgba(255, 255, 255, 0.1)";
+
+            document.getElementById('player-card').classList.remove('animate-turn');
+            document.getElementById('opponent-card').classList.remove('animate-turn');
+            
+            
+            setTimeout(() => {
+                document.getElementById('player-card').innerHTML = `<h3>${playerCard.name}</h3>` +
+                    `<div class="score">${game.playerScore}</div>` + 
+                    Object.entries(playerCard.attributes).map(([key, value]) => {
+                        const roundResult = game.usedAttributes.get(key);
+                        let className = '';
+                        if (roundResult) {
+                            if (roundResult.result === 'player') {
+                                className = 'highlight-win';
+                            } else if (roundResult.result === 'opponent') {
+                                className = 'highlight-lose';
+                            } else {
+                                className = 'highlight-draw'; // РЇРєС‰Рѕ РЅС–С‡РёСЏ
+                            }
+                        }
+                        return `<p class="${className}">${key}: ${value}</p>`;
+                    }).join('');
+                
+                document.getElementById('opponent-card').innerHTML = `<h3>Hidden Card</h3>` +
+                    `<div class="score">${game.opponentScore}</div>` + 
+                    Object.keys(opponentCard.attributes).map(key => {
+                        const roundResult = game.usedAttributes.get(key);
+                        let className = '';
+                        if (roundResult) {
+                            if (roundResult.result === 'player') {
+                                className = 'highlight-lose'; // Р“СЂР°РІРµС†СЊ РІРёРіСЂР°РІ вЂ“ РѕРїРѕРЅРµРЅС‚ РїСЂРѕРіСЂР°РІ
+                            } else if (roundResult.result === 'opponent') {
+                                className = 'highlight-win'; // РћРїРѕРЅРµРЅС‚ РІРёРіСЂР°РІ вЂ“ РїС–РґСЃРІС–С‡СѓС”РјРѕ Р·РµР»РµРЅРёРј
+                            } else {
+                                className = 'highlight-draw'; // РќС–С‡РёСЏ вЂ“ РїС–РґСЃРІС–С‡СѓС”РјРѕ Р¶РѕРІС‚РёРј
+                            }
+                            return `<p class="${className}">${key}: ${roundResult.opponentValue}</p>`;
+                        }
+                        return `<p>${key}: ?</p>`;
+                    }).join('');
+                
+                // document.getElementById('result').innerText = `Round ${game.rounds}/${game.maxRounds}`;
+            }, 300);
+        }
+
+        function giveOppentTurn() {
+            if (game.currentPlayer === 'opponent' && game.rounds < game.maxRounds && game.usedAttributes.size < game.maxRounds) {
+                setTimeout(opponentTurn, 1000);
+            }
+        }
+
+        function opponentTurn() {
+            document.getElementById('opponent-card').classList.add('animate-turn');
+
+            const availableAttributes = Object.keys(card1.attributes).filter(attr => !game.usedAttributes.has(attr));
+
+            if (availableAttributes.length > 0) {
+                const chosenAttribute = availableAttributes[Math.floor(Math.random() * availableAttributes.length)];
+
+                // Р’РёР±РёСЂР°С”РјРѕ РІРёРїР°РґРєРѕРІСѓ Р·Р°С‚СЂРёРјРєСѓ РІС–Рґ 1 РґРѕ 3 СЃРµРєСѓРЅРґ
+                const delay = Math.floor(Math.random() * 2000) + 1000; 
+
+                // РџС–РґСЃРІС–С‡СѓС”РјРѕ Р°С‚СЂРёР±СѓС‚ РїРµСЂРµРґ РІРёР±РѕСЂРѕРј
+                let counter = 0;
+                const interval = setInterval(() => {
+                    const randomAttr = availableAttributes[Math.floor(Math.random() * availableAttributes.length)];
+                    document.getElementById(`btn-${randomAttr}`).style.background = "#ffcc00"; 
+                    setTimeout(() => {
+                        document.getElementById(`btn-${randomAttr}`).style.background = ""; 
+                    }, 300);
+                    counter++;
+                    if (counter > 5) clearInterval(interval);
+                }, 200);
+
+                setTimeout(() => {
+                    const button = document.getElementById(`btn-${chosenAttribute}`);
+                    if (button) {
+                        button.disabled = true;
+                        button.style.opacity = "0.5";
+                    }
+
+                    const roundResult = game.playRound(chosenAttribute);
+                    updateUI(roundResult.playerCard, roundResult.opponentCard);
+                    giveOppentTurn();
+                }, delay);
+            }
+        }
+
+
+
+        function createAttributeButtons() {
+            const attributes = Object.keys(card1.attributes);
+            const container = document.getElementById('attribute-buttons');
+            container.innerHTML = ''; // РћС‡РёСЃС‚РёС‚Рё РїРµСЂРµРґ СЃС‚РІРѕСЂРµРЅРЅСЏРј
+
+            attributes.forEach(attr => {
+                const button = document.createElement('button');
+                button.innerText = attr;
+                button.id = `btn-${attr}`; // РЈРЅС–РєР°Р»СЊРЅРёР№ ID РєРЅРѕРїРєРё
+                button.onclick = () => {
+                    if (game.currentPlayer === 'player') {
+                        playSound("click-sound"); // Додаємо звук натискання
+                        document.getElementById('player-card').classList.add('animate-turn');
+                        button.disabled = true; // Р РѕР±РёРјРѕ РєРЅРѕРїРєСѓ РЅРµР°РєС‚РёРІРЅРѕСЋ
+                        button.style.opacity = "0.5"; // Р’С–Р·СѓР°Р»СЊРЅРµ Р·Р°С‚РµРјРЅРµРЅРЅСЏ
+                        setTimeout(() => {
+                            const roundResult = game.playRound(attr);
+                            updateUI(roundResult.playerCard, roundResult.opponentCard);
+                            giveOppentTurn();
+                        }, 500);
+                    }
+                };
+                container.appendChild(button);
+            });
+        }
+
+        document.getElementById('new-game').addEventListener('click', restartGame);
+
+        function deleteGame() {
+            if (typeof game !== "undefined") {
+                // Видаляємо всі властивості об'єкта, щоб звільнити пам'ять
+                for (let prop in game) {
+                    if (game.hasOwnProperty(prop)) {
+                        delete game[prop];
+                    }
+                }
+                // Видаляємо сам об'єкт
+                game = null;
+
+                console.log("Game object has been deleted.");
+            } else {
+                console.log("No game object found.");
+            }
+        }
+
+        function playSound(id) {
+            const sound = document.getElementById(id);
+            if (sound) {
+                sound.currentTime = 0; // Щоб звук програвався навіть при швидкому кліканні
+                sound.play();
+            }
+        }
+
+        function restartGame() {
+            // deleteGame(); // Видаляємо старий об'єкт гри перед створенням нового
+            // Показуємо інтерфейс гри після натискання кнопки
+            document.getElementById("game-interface").classList.remove("hidden");
+
+            // Ефект зникнення карт
+            document.getElementById('player-card').style.opacity = "0";
+            document.getElementById('opponent-card').style.opacity = "0";
+
+            setTimeout(() => {
+                // Р’РёР±РёСЂР°С”РјРѕ РЅРѕРІС– РєР°СЂС‚Рё
+                const newPlayerCard = getRandomCard();
+                const newOpponentCard = getRandomCard(newPlayerCard);
+
+                // РћРЅРѕРІР»СЋС”РјРѕ РєРѕР»РѕРґРё
+                game.playerDeck = [newPlayerCard];
+                game.opponentDeck = [newOpponentCard];
+
+                // РЎРєРёРґР°С”РјРѕ СЃС‚Р°С‚РёСЃС‚РёРєСѓ
+                game.rounds = 0;
+                game.playerScore = 0;
+                game.opponentScore = 0;
+                game.usedAttributes.clear();
+                game.currentPlayer = 'player';
+
+                // РђРєС‚РёРІСѓС”РјРѕ РєРЅРѕРїРєРё Р°С‚СЂРёР±СѓС‚С–РІ
+                document.querySelectorAll('#attribute-buttons button').forEach(button => {
+                    button.disabled = false;
+                    button.style.opacity = "1";
+                });
+
+                // РћРЅРѕРІР»СЋС”РјРѕ С–РЅС‚РµСЂС„РµР№СЃ
+                updateUI(newPlayerCard, newOpponentCard);
+                giveOppentTurn();
+
+                // РџР»Р°РІРЅРѕ РїРѕРІРµСЂС‚Р°С”РјРѕ РєР°СЂС‚Рё
+                document.getElementById('player-card').style.opacity = "1";
+                document.getElementById('opponent-card').style.opacity = "1";
+            }, 500);
+        }
+
+        function getFinalResult() {
+            setTimeout(() => {
+                deleteGame(); // Видаляємо об'єкт гри після закінчення
+                document.getElementById("game-interface").classList.add("hidden");
+            }, 2000);
+
+            if (this.playerScore > this.opponentScore) return "🎉 Гравець переміг! 🏆";
+            if (this.playerScore < this.opponentScore) return "💀 Опонент виграв! 💀";
+            return "🤝 Нічия! Обидва гідні суперники!";
+        }
+
+        createAttributeButtons();
+        updateUI(playerCard, opponentCard);
+        giveOppentTurn();
+    </script>
+</body>
+</html>
