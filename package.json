@@ -1,0 +1,3 @@
+"scripts": {
+  "deploy": "npx wrangler deploy src/main.html"
+}
