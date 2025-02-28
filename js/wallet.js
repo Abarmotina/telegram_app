@@ -13,34 +13,31 @@ function logMessage(message) {
 
 // **Функція для підключення гаманця**
 export async function connectWallet() {
+    logMessage("🔄 Починаємо підключення гаманця...");
+
     if (!window.Telegram || !window.Telegram.WebApp) {
         logMessage("❌ Telegram Web App НЕ ініціалізований!");
+        return;
     } else {
         logMessage("✅ Telegram Web App ініціалізований!");
     }
-    
+
     try {
-        // **Перевіряємо, чи ініціалізовано Telegram Web App**
-        if (!window.Telegram || !window.Telegram.WebApp) {
-            logMessage("❌ Telegram Web App не ініціалізовано!");
-            return;
-        }
-
         if (!window.Telegram.WebApp.initDataUnsafe?.user) {
-            logMessage("❌ Користувач не авторизований у Telegram Web App!");
+            logMessage("❌ Користувач НЕ авторизований у Telegram Web App!");
             return;
         }
 
-        // Отримуємо ID користувача Telegram (він використовується для отримання публічного ключа)
         const tgUserId = window.Telegram.WebApp.initDataUnsafe.user.id;
-        logMessage("✅ Telegram Web App ініціалізовано. ID користувача:", tgUserId);
+        logMessage(`🆔 ID користувача: ${tgUserId}`);
 
-        // **Запитуємо публічний ключ користувача**
+        // **Отримуємо публічний ключ користувача**
         const publicKey = await getPublicKeyFromTelegram(tgUserId);
         if (!publicKey) {
             logMessage("❌ Не вдалося отримати публічний ключ Telegram Wallet!");
             return;
         }
+        logMessage(`🔑 Отримано публічний ключ: ${publicKey}`);
 
         // **Створюємо об'єкт гаманця**
         wallet = new tonweb.wallet.all.v4({
@@ -49,9 +46,9 @@ export async function connectWallet() {
         });
 
         userAddress = await wallet.getAddress();
-        logMessage("✅ Telegram Wallet підключено! Адреса:", userAddress.toString(true, true, true));
+        logMessage(`✅ Telegram Wallet підключено! Адреса: ${userAddress.toString(true, true, true)}`);
     } catch (error) {
-        logMessage("❌ Помилка підключення гаманця:", error);
+        logMessage(`❌ Помилка підключення гаманця: ${error.message}`);
     }
 }
 
