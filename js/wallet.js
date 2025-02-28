@@ -6,6 +6,10 @@ let userAddress = null;
 
 // **Функція для підключення гаманця**
 export async function connectWallet() {
+    console.log("Перевіряємо Telegram WebApp...");
+    console.log("window.Telegram:", window.Telegram);
+    console.log("window.Telegram.WebApp:", window.Telegram?.WebApp);
+    console.log("window.Telegram.WebApp.initDataUnsafe:", window.Telegram?.WebApp?.initDataUnsafe);
     try {
         // **Перевіряємо, чи ініціалізовано Telegram Web App**
         if (!window.Telegram || !window.Telegram.WebApp) {
