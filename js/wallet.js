@@ -4,18 +4,18 @@ async function fetchWalletsList() {
         if (!response.ok) throw new Error(`Failed to load wallets list: ${response.status}`);
 
         const rawWallets = await response.json();
-        console.log("Отриманий список гаманців:", rawWallets);
+        console.log("Отриманий список гаманців (оригінал):", rawWallets);
 
-        // 🔹 Перетворюємо отриманий список у формат, який очікує TonConnect SDK
+        // 🔹 Перетворюємо список у правильний формат
         const formattedWallets = rawWallets.map(wallet => ({
-            name: wallet.name || wallet.app_name, // Якщо є name, використовуємо його, інакше app_name
+            name: wallet.name || wallet.app_name, // Використовуємо name або app_name
             image: wallet.image,
             about: wallet.about || "No description available",
             homepage: wallet.homepage || "https://ton.org",
             bridge: wallet.bridge || "https://bridge.tonapi.io/bridge"
         }));
 
-        console.log("Форматований список гаманців:", formattedWallets);
+        console.log("Фінальний список гаманців перед ініціалізацією:", formattedWallets);
         return formattedWallets;
     } catch (error) {
         console.error("Помилка завантаження списку гаманців:", error);
@@ -23,17 +23,22 @@ async function fetchWalletsList() {
     }
 }
 
-
 async function initTonConnect() {
-    // Чекаємо, поки SDK буде доступний
     while (!window.TonConnectSDK) {
         console.log("Очікуємо завантаження TonConnectSDK...");
-        await new Promise(resolve => setTimeout(resolve, 100)); // Затримка 100 мс
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     console.log("TonConnectSDK завантажено, ініціалізуємо TonConnect...");
 
-    const walletsList = await fetchWalletsList();
+    let walletsList = await fetchWalletsList();
+
+    if (!walletsList || walletsList.length === 0) {
+        console.error("Список гаманців порожній! Використовуємо резервний список.");
+        walletsList = fallbackWallets; // Використовуємо резервний список
+    }
+
+    console.log("Передаємо в TonConnect наступний список гаманців:", walletsList);
 
     const tonConnect = new window.TonConnectSDK.TonConnect({
         manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json",
