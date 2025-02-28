@@ -2,7 +2,7 @@ import { TonConnect } from "@tonconnect/sdk";
 
 // Ініціалізуємо TON Connect
 const tonConnect = new TonConnect({
-    manifestUrl: "https://Abarmotina.github.io/my-telegram_app/tonconnect-manifest.json"
+    manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
 });
 
 // Функція для підключення гаманця
