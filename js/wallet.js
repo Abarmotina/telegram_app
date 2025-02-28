@@ -39,16 +39,8 @@ export async function connectWallet() {
         }
         logMessage(`🔑 Отримано публічний ключ: ${publicKey}`);
 
-        // 🔎 Додано перевірку `tonweb.wallet.all.v4`
-        if (!tonweb.wallet || !tonweb.wallet.all || !tonweb.wallet.all.v4) {
-            logMessage("❌ tonweb.wallet.all.v4 НЕ існує! Ймовірно, проблема в бібліотеці TonWeb.");
-            return;
-        } else {
-            logMessage("✅ tonweb.wallet.all.v4 існує, створюємо гаманець...");
-        }
-
         // **Створюємо об'єкт гаманця**
-        wallet = new tonweb.wallet.all.v4({
+        wallet = new tonweb.Wallets.all.v3R2({
             publicKey: TonWeb.utils.hexToBytes(publicKey),
             workchain: 0
         });
