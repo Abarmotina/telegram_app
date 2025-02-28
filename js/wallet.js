@@ -93,10 +93,13 @@ async function getPublicKeyFromTelegram() {
         logMessage(`📡 Надсилаємо запит до Telegram Wallet API з initData: ${window.Telegram.WebApp.initData}`);
 
         const response = await fetch("https://wallet.tg/api/user_key", {
-            method: "POST", // ✅ Має бути POST!
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ init_data: initData }) // ✅ Передаємо initData
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${initData}`  // ✅ Передаємо `initData` в заголовок, а не body!
+            }
         });
+        
 
         const data = await response.json();
 
