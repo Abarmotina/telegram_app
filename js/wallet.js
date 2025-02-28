@@ -1,5 +1,3 @@
-import { TonConnect } from "@tonconnect/sdk";
-
 // Ініціалізуємо TON Connect
 const tonConnect = new TonConnect({
     manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
