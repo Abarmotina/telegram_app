@@ -30,16 +30,14 @@
     </div>
 
     <script type="module">
-        window.global = window.globalThis;
+        import { TonConnectUI } from "https://esm.sh/@tonconnect/ui@0.0.27";
     
-        import { TonConnect } from "https://esm.sh/@tonconnect/sdk@0.0.40?bundle&target=browser";
-    
-        const tonConnect = new TonConnect({
+        const tonConnectUI = new TonConnectUI({
             manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
         });
     
-        window.tonConnect = tonConnect;
-    </script>    
+        window.tonConnectUI = tonConnectUI;
+    </script>       
     
     <script type="module" src="js/game.js"></script>
     <script type="module" src="js/ui.js"></script>
