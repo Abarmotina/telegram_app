@@ -31,9 +31,12 @@
 
     <script type="module">
         import { TonConnect } from "https://unpkg.com/@tonconnect/sdk@latest";
-        window.tonConnect = new TonConnect({
-            manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
+        
+        const tonConnect = new TonConnect({
+            manifestUrl: "https://yourusername.github.io/my-repo/tonconnect-manifest.json"
         });
+    
+        window.tonConnect = tonConnect;
     </script>
 
     <script type="module" src="js/game.js"></script>
