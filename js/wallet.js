@@ -1,4 +1,3 @@
-// Завантажуємо список доступних гаманців
 async function fetchWalletsList() {
     try {
         const response = await fetch("https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets.json");
@@ -12,7 +11,8 @@ async function fetchWalletsList() {
             homepage: w.about_url || "https://ton.org",
             bridge: w.bridge || [],
             jsBridgeKey: w.jsBridgeKey || undefined,
-            universalLink: w.universal_url || undefined
+            universalLink: w.universal_url || undefined,
+            appName: w.app_name || undefined, // Додаємо app_name для перевірки Telegram Wallet
         }));
     } catch (error) {
         console.error("Помилка завантаження списку гаманців:", error);
@@ -20,7 +20,6 @@ async function fetchWalletsList() {
     }
 }
 
-// Ініціалізація TonConnect
 async function initTonConnect() {
     while (!window.TonConnectSDK) {
         console.log("Очікуємо завантаження TonConnectSDK...");
@@ -42,27 +41,11 @@ async function initTonConnect() {
 
     window.tonConnect = tonConnect;
     console.log("TonConnect успішно ініціалізовано!");
-    displayWallets(walletsList);
 }
 
 initTonConnect();
 
-// Відображення кнопок для вибору гаманця
-function displayWallets(wallets) {
-    const walletContainer = document.getElementById("wallets");
-    walletContainer.innerHTML = "";
-    
-    wallets.forEach(wallet => {
-        const btn = document.createElement("button");
-        btn.innerHTML = `<img src="${wallet.image}" width="30" height="30" /> ${wallet.name}`;
-        btn.style.margin = "5px";
-        btn.onclick = () => connectWallet(wallet);
-        walletContainer.appendChild(btn);
-    });
-}
-
-// Функція для підключення вибраного гаманця
-async function connectWallet(wallet) {
+async function connectWallet() {
     try {
         const tonConnect = window.tonConnect;
         if (!tonConnect) {
@@ -70,15 +53,26 @@ async function connectWallet(wallet) {
             return;
         }
 
-        console.log("Обраний гаманець:", wallet);
-        
-        if (wallet.jsBridgeKey) {
-            await tonConnect.connect({ jsBridgeKey: wallet.jsBridgeKey });
-        } else if (wallet.universalLink) {
-            window.location.href = wallet.universalLink;
-        } else {
-            alert("Цей гаманець не підтримує підключення через TonConnect");
+        const wallets = await fetchWalletsList();
+        console.log("Доступні гаманці:", wallets);
+
+        // Шукаємо Telegram Wallet (app_name: "tonwallet")
+        let telegramWallet = wallets.find(w => w.appName === "tonwallet");
+
+        if (!telegramWallet) {
+            alert("Telegram Wallet не знайдено серед доступних гаманців!");
             return;
+        }
+
+        console.log("Знайдено Telegram Wallet:", telegramWallet);
+
+        // Підключення через jsBridgeKey або universalLink
+        if (telegramWallet.jsBridgeKey) {
+            await tonConnect.connect({ jsBridgeKey: telegramWallet.jsBridgeKey });
+        } else if (telegramWallet.universalLink) {
+            window.location.href = telegramWallet.universalLink;
+        } else {
+            alert("Telegram Wallet не підтримує підключення через TonConnect!");
         }
 
         console.log("Гаманець підключено:", tonConnect.account);
@@ -87,7 +81,6 @@ async function connectWallet(wallet) {
     }
 }
 
-// Функція для перевірки підключення гаманця
 async function checkWalletConnection() {
     const tonConnect = window.tonConnect;
     if (!tonConnect) {
