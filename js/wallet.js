@@ -22,23 +22,23 @@ export async function connectWallet() {
     try {
         // **Перевіряємо, чи ініціалізовано Telegram Web App**
         if (!window.Telegram || !window.Telegram.WebApp) {
-            console.error("❌ Telegram Web App не ініціалізовано!");
+            logMessage("❌ Telegram Web App не ініціалізовано!");
             return;
         }
 
         if (!window.Telegram.WebApp.initDataUnsafe?.user) {
-            console.error("❌ Користувач не авторизований у Telegram Web App!");
+            logMessage("❌ Користувач не авторизований у Telegram Web App!");
             return;
         }
 
         // Отримуємо ID користувача Telegram (він використовується для отримання публічного ключа)
         const tgUserId = window.Telegram.WebApp.initDataUnsafe.user.id;
-        console.log("✅ Telegram Web App ініціалізовано. ID користувача:", tgUserId);
+        logMessage("✅ Telegram Web App ініціалізовано. ID користувача:", tgUserId);
 
         // **Запитуємо публічний ключ користувача**
         const publicKey = await getPublicKeyFromTelegram(tgUserId);
         if (!publicKey) {
-            console.error("❌ Не вдалося отримати публічний ключ Telegram Wallet!");
+            logMessage("❌ Не вдалося отримати публічний ключ Telegram Wallet!");
             return;
         }
 
@@ -49,9 +49,9 @@ export async function connectWallet() {
         });
 
         userAddress = await wallet.getAddress();
-        console.log("✅ Telegram Wallet підключено! Адреса:", userAddress.toString(true, true, true));
+        logMessage("✅ Telegram Wallet підключено! Адреса:", userAddress.toString(true, true, true));
     } catch (error) {
-        console.error("❌ Помилка підключення гаманця:", error);
+        logMessage("❌ Помилка підключення гаманця:", error);
     }
 }
 
@@ -64,16 +64,16 @@ async function getPublicKeyFromTelegram(userId) {
 // **Отримати баланс гаманця**
 export async function getWalletBalance() {
     if (!wallet || !userAddress) {
-        console.error("❌ Гаманець не підключено!");
+        logMessage("❌ Гаманець не підключено!");
         return null;
     }
 
     try {
         const balance = await tonweb.getBalance(userAddress);
-        console.log("💰 Баланс гаманця:", TonWeb.utils.fromNano(balance), "TON");
+        logMessage("💰 Баланс гаманця:", TonWeb.utils.fromNano(balance), "TON");
         return TonWeb.utils.fromNano(balance);
     } catch (error) {
-        console.error("❌ Помилка отримання балансу:", error);
+        logMessage("❌ Помилка отримання балансу:", error);
         return null;
     }
 }
@@ -81,7 +81,7 @@ export async function getWalletBalance() {
 // **Надсилання транзакції**
 export async function sendTransaction(toAddress, amount) {
     if (!wallet || !userAddress) {
-        console.error("❌ Гаманець не підключено!");
+        logMessage("❌ Гаманець не підключено!");
         return;
     }
 
@@ -95,19 +95,19 @@ export async function sendTransaction(toAddress, amount) {
         });
 
         await transfer.send();
-        console.log(`✅ Транзакція відправлена: ${amount} TON → ${toAddress}`);
+        logMessage(`✅ Транзакція відправлена: ${amount} TON → ${toAddress}`);
     } catch (error) {
-        console.error("❌ Помилка відправки транзакції:", error);
+        logMessage("❌ Помилка відправки транзакції:", error);
     }
 }
 
 // **Перевірити підключення гаманця**
 export function checkWalletConnection() {
     if (userAddress) {
-        console.log("✅ Гаманець підключено:", userAddress.toString(true, true, true));
+        logMessage("✅ Гаманець підключено:", userAddress.toString(true, true, true));
         return userAddress.toString(true, true, true);
     } else {
-        console.log("❌ Гаманець не підключено");
+        logMessage("❌ Гаманець не підключено");
         return null;
     }
 }
