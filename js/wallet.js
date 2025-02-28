@@ -79,11 +79,21 @@ export async function connectWallet() {
 
 async function getPublicKeyFromTelegram() {
     try {
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            logError("❌ Telegram Web App не ініціалізований!");
+            return null;
+        }
+
+        const initData = window.Telegram.WebApp.initData;
+        if (!initData) {
+            logError("❌ Відсутні initData для запиту до Telegram Wallet API!");
+            return null;
+        }
+
         const response = await fetch("https://wallet.tg/api/user_key", {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
+            method: "POST", // ✅ Має бути POST!
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ init_data: initData }) // ✅ Передаємо initData
         });
 
         const data = await response.json();
@@ -100,6 +110,7 @@ async function getPublicKeyFromTelegram() {
         return null;
     }
 }
+
 
 
 // **Отримати баланс гаманця**
