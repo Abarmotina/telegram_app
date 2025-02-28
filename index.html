@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <audio id="click-sound" src="assets/click.mp3"></audio>
+    <audio id="win-sound" src="assets/win.mp3"></audio>
+    <audio id="lose-sound" src="assets/lose.mp3"></audio>
+    <audio id="draw-sound" src="assets/draw.mp3"></audio>
+
+    <div id="game-interface" class="hidden">
+        <h1>Card Game</h1>
+        <p id="turn-indicator">Ваш хід!</p>
+        <div class="card-container">
+            <div id="player-card" class="card"></div>
+            <div id="opponent-card" class="card"></div>
+        </div>
+        <div class="buttons" id="attribute-buttons"></div>
+    </div>
+    <div class="buttons">
+        <button id="connect-wallet">🔗 Підключити TON гаманець</button>
+        <button id="new-game">Почати нову гру</button>
+    </div>
+    <div id="game-interface" class="hidden">
+        <p id="result"></p>
+    </div>
+
+    <script src="https://unpkg.com/@tonconnect/sdk@latest"></script>
+
+    <script type="module" src="js/game.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/sounds.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
