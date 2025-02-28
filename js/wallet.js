@@ -4,12 +4,21 @@ const tonweb = new TonWeb();
 let wallet;
 let userAddress = null;
 
+function logMessage(message) {
+    const logContainer = document.getElementById("debug-log");
+    if (logContainer) {
+        logContainer.innerHTML += `<p>${message}</p>`;
+    }
+}
+
 // **Функція для підключення гаманця**
 export async function connectWallet() {
-    console.log("Перевіряємо Telegram WebApp...");
-    console.log("window.Telegram:", window.Telegram);
-    console.log("window.Telegram.WebApp:", window.Telegram?.WebApp);
-    console.log("window.Telegram.WebApp.initDataUnsafe:", window.Telegram?.WebApp?.initDataUnsafe);
+    if (!window.Telegram || !window.Telegram.WebApp) {
+        logMessage("❌ Telegram Web App НЕ ініціалізований!");
+    } else {
+        logMessage("✅ Telegram Web App ініціалізований!");
+    }
+    
     try {
         // **Перевіряємо, чи ініціалізовано Telegram Web App**
         if (!window.Telegram || !window.Telegram.WebApp) {
