@@ -90,6 +90,8 @@ async function getPublicKeyFromTelegram() {
             return null;
         }
 
+        logMessage(`📡 Надсилаємо запит до Telegram Wallet API з initData: ${window.Telegram.WebApp.initData}`);
+
         const response = await fetch("https://wallet.tg/api/user_key", {
             method: "POST", // ✅ Має бути POST!
             headers: { "Content-Type": "application/json" },
