@@ -3,15 +3,26 @@ async function fetchWalletsList() {
         const response = await fetch("https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets.json");
         if (!response.ok) throw new Error(`Failed to load wallets list: ${response.status}`);
 
-        const data = await response.json();
-        console.log("Отриманий список гаманців:", data); // 🔹 Додаємо лог
+        const rawWallets = await response.json();
+        console.log("Отриманий список гаманців:", rawWallets);
 
-        return data;
+        // 🔹 Перетворюємо отриманий список у формат, який очікує TonConnect SDK
+        const formattedWallets = rawWallets.map(wallet => ({
+            name: wallet.name || wallet.app_name, // Якщо є name, використовуємо його, інакше app_name
+            image: wallet.image,
+            about: wallet.about || "No description available",
+            homepage: wallet.homepage || "https://ton.org",
+            bridge: wallet.bridge || "https://bridge.tonapi.io/bridge"
+        }));
+
+        console.log("Форматований список гаманців:", formattedWallets);
+        return formattedWallets;
     } catch (error) {
         console.error("Помилка завантаження списку гаманців:", error);
         return [];
     }
 }
+
 
 async function initTonConnect() {
     // Чекаємо, поки SDK буде доступний
