@@ -4,14 +4,13 @@ async function fetchWalletsList() {
         if (!response.ok) throw new Error("Failed to load wallets list");
         const wallets = await response.json();
 
-        // Фільтруємо правильні гаманці
         return wallets.map(w => ({
             name: w.name,
             image: w.image,
             about: w.about_url || "No description available",
             homepage: w.about_url || "https://ton.org",
             bridge: w.bridge || [],
-            jsBridgeKey: w.jsBridgeKey || undefined,  // деякі гаманці можуть не мати цього параметра
+            jsBridgeKey: w.jsBridgeKey || undefined,
             universalLink: w.universal_url || undefined
         }));
     } catch (error) {
@@ -21,20 +20,22 @@ async function fetchWalletsList() {
 }
 
 async function initTonConnect() {
-    // Чекаємо, поки SDK буде доступний
     while (!window.TonConnectSDK) {
         console.log("Очікуємо завантаження TonConnectSDK...");
-        await new Promise(resolve => setTimeout(resolve, 100)); // Затримка 100 мс
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     console.log("TonConnectSDK завантажено, ініціалізуємо TonConnect...");
 
     const walletsList = await fetchWalletsList();
-    console.log(walletsList);
+    if (!walletsList || walletsList.length === 0) {
+        console.error("Список гаманців порожній або не завантажився!");
+        return;
+    }
 
     const tonConnect = new window.TonConnectSDK.TonConnect({
         manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json",
-        walletsList: walletsList
+        walletsList: { wallets: walletsList } // Передаємо у правильному форматі
     });
 
     window.tonConnect = tonConnect;
@@ -43,9 +44,14 @@ async function initTonConnect() {
 
 initTonConnect();
 
-// Функція для підключення гаманця
 async function connectWallet() {
     try {
+        const tonConnect = window.tonConnect;
+        if (!tonConnect) {
+            console.error("TonConnect не ініціалізовано!");
+            return;
+        }
+
         const wallets = await fetchWalletsList();
         const supportedWallet = wallets.find(w => w.jsBridgeKey);
         if (!supportedWallet) {
@@ -61,15 +67,19 @@ async function connectWallet() {
     }
 }
 
-// Функція для перевірки підключення гаманця
 async function checkWalletConnection() {
+    const tonConnect = window.tonConnect;
+    if (!tonConnect) {
+        console.error("TonConnect не ініціалізовано!");
+        return;
+    }
+
     const account = tonConnect.account;
-    if (account) {
-        console.log("Гаманець вже підключено:", account);
+    if (account && account.address) {
+        console.log("Гаманець вже підключено:", account.address);
     } else {
         console.log("Гаманець не підключено");
     }
 }
 
-// Експортуємо функції
 export { connectWallet, checkWalletConnection };
