@@ -12,7 +12,7 @@ async function fetchWalletsList() {
 async function initTonConnect() {
     const walletsList = await fetchWalletsList();
 
-    const tonConnect = new TonConnect({
+    const tonConnect = new window.TonConnectSDK.TonConnect ({
         manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json",
         walletsList: walletsList
     });
@@ -21,7 +21,6 @@ async function initTonConnect() {
 }
 
 initTonConnect();
-
 
 // Функція для підключення гаманця
 async function connectWallet() {
