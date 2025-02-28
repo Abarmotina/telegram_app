@@ -1,4 +1,4 @@
-import * as TonWeb from "https://cdn.jsdelivr.net/npm/tonweb@latest/dist/tonweb.min.js";
+import TonWeb from "https://cdn.jsdelivr.net/npm/tonweb@latest/dist/tonweb.min.js";
 
 // Ініціалізуємо TonWeb для mainnet
 const tonweb = new TonWeb(new TonWeb.HttpProvider("https://toncenter.com/api/v2/jsonRPC"));
@@ -75,4 +75,28 @@ export async function sendTransaction(toAddress, amount) {
     }
 
     try {
-        
+        const seqno = await wallet.methods.seqno().call();
+        const transfer = wallet.methods.transfer({
+            secretKey: new Uint8Array([]), // ? Тут має бути підпис користувача
+            toAddress: toAddress,
+            amount: TonWeb.utils.toNano(amount),
+            seqno
+        });
+
+        await transfer.send();
+        console.log(`? Транзакція відправлена: ${amount} TON ? ${toAddress}`);
+    } catch (error) {
+        console.error("? Помилка відправки транзакції:", error);
+    }
+}
+
+// **Перевірити підключення гаманця**
+export function checkWalletConnection() {
+    if (userAddress) {
+        console.log("? Гаманець підключено:", userAddress.toString(true, true, true));
+        return userAddress.toString(true, true, true);
+    } else {
+        console.log("? Гаманець не підключено");
+        return null;
+    }
+}
