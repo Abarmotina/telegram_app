@@ -29,7 +29,12 @@
         <p id="result"></p>
     </div>
 
-    <script src="https://unpkg.com/@tonconnect/sdk@latest"></script>
+    <script type="module">
+        import { TonConnect } from "https://unpkg.com/@tonconnect/sdk@latest";
+        window.tonConnect = new TonConnect({
+            manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
+        });
+    </script>
 
     <script type="module" src="js/game.js"></script>
     <script type="module" src="js/ui.js"></script>
