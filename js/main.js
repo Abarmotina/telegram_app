@@ -3,12 +3,12 @@ import { updateUI, createAttributeButtons, toggleGameInterface, updateGameResult
 import { playClickSound, playWinSound, playLoseSound, playDrawSound } from "./sounds.js";
 import { connectWallet, checkWalletConnection } from "./wallet.js";
 
-// Р—Р°РїСѓСЃРє РЅРѕРІРѕС— РіСЂРё
+// Запуск нової гри
 function restartGame() {
     playClickSound();
     toggleGameInterface(true);
 
-    // РћРЅРѕРІР»СЋС”РјРѕ РєРѕР»РѕРґРё РіСЂР°РІС†СЏ С‚Р° РѕРїРѕРЅРµРЅС‚Р°
+    // Оновлюємо колоди гравця та опонента
     const newPlayerCard = getRandomCard();
     const newOpponentCard = getRandomCard(newPlayerCard);
 
@@ -20,18 +20,18 @@ function restartGame() {
     game.usedAttributes.clear();
     game.currentPlayer = 'player';
 
-    // Р’С–РґРЅРѕРІР»СЋС”РјРѕ Р°РєС‚РёРІРЅС–СЃС‚СЊ РєРЅРѕРїРѕРє
+    // Відновлюємо активність кнопок
     document.querySelectorAll('#attribute-buttons button').forEach(button => {
         button.disabled = false;
         button.style.opacity = "1";
     });
 
-    // РћРЅРѕРІР»СЋС”РјРѕ UI
+    // Оновлюємо UI
     createAttributeButtons();
     updateUI(newPlayerCard, newOpponentCard);
 }
 
-// Р’РёРєРѕРЅСѓС” С…С–Рґ РѕРїРѕРЅРµРЅС‚Р° С‡РµСЂРµР· Р·Р°С‚СЂРёРјРєСѓ
+// Виконує хід опонента через затримку
 function giveOpponentTurn() {
     if (game.rounds >= game.maxRounds) {
         handleGameEnd();
@@ -43,7 +43,7 @@ function giveOpponentTurn() {
     }
 }
 
-// Р›РѕРіС–РєР° С…РѕРґСѓ РѕРїРѕРЅРµРЅС‚Р° (РІРёР±С–СЂ РІРёРїР°РґРєРѕРІРѕРіРѕ Р°С‚СЂРёР±СѓС‚Р°)
+// Логіка ходу опонента (вибір випадкового атрибута)
 function opponentTurn() {
     const availableAttributes = Object.keys(game.playerDeck[0].attributes).filter(attr => !game.usedAttributes.has(attr));
 
@@ -62,7 +62,7 @@ function opponentTurn() {
     }
 }
 
-// РћР±СЂРѕР±РєР° РІРёР±РѕСЂСѓ Р°С‚СЂРёР±СѓС‚Р° РіСЂР°РІС†РµРј
+// Обробка вибору атрибута гравцем
 document.getElementById('attribute-buttons').addEventListener('click', (event) => {
     if (event.target.tagName === 'BUTTON' && game.currentPlayer === 'player') {
         const chosenAttribute = event.target.innerText.toLowerCase();
@@ -78,14 +78,14 @@ document.getElementById('attribute-buttons').addEventListener('click', (event) =
     }
 });
 
-// РћР±СЂРѕР±РєР° Р·Р°РІРµСЂС€РµРЅРЅСЏ РіСЂРё
+// Обробка завершення гри
 function handleGameEnd() {
     const resultText = game.getFinalResult();
     updateGameResult(resultText);
 
-    if (resultText.includes("Р“СЂР°РІРµС†СЊ РїРµСЂРµРјС–Рі")) {
+    if (resultText.includes("Гравець переміг")) {
         playWinSound();
-    } else if (resultText.includes("РћРїРѕРЅРµРЅС‚ РІРёРіСЂР°РІ")) {
+    } else if (resultText.includes("Опонент виграв")) {
         playLoseSound();
     } else {
         playDrawSound();
@@ -94,16 +94,16 @@ function handleGameEnd() {
     setTimeout(() => toggleGameInterface(false), 2000);
 }
 
-// РќР°С‚РёСЃРєР°РЅРЅСЏ РєРЅРѕРїРєРё "РќРѕРІР° РіСЂР°"
+// Натискання кнопки "Нова гра"
 document.getElementById('new-game').addEventListener('click', restartGame);
 
-// РћР±СЂРѕР±РєР° РєРЅРѕРїРєРё "РџС–РґРєР»СЋС‡РёС‚Рё TON РіР°РјР°РЅРµС†СЊ"
+// Обробка кнопки "Підключити TON гаманець"
 document.getElementById("connect-wallet").addEventListener("click", async () => {
     await connectWallet();
     checkWalletConnection();
 });
 
-// РЎС‚РІРѕСЂРµРЅРЅСЏ РєРЅРѕРїРѕРє С‚Р° РѕРЅРѕРІР»РµРЅРЅСЏ С–РЅС‚РµСЂС„РµР№СЃСѓ РїСЂРё СЃС‚Р°СЂС‚С–
+// Створення кнопок та оновлення інтерфейсу при старті
 createAttributeButtons();
 updateUI(game.playerDeck[0], game.opponentDeck[0]);
 giveOpponentTurn();
