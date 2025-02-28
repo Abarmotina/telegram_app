@@ -1,5 +1,5 @@
 // Ініціалізуємо TON Connect
-const tonConnect = new window.TonConnectSDK({
+const tonConnect = new window.TonConnectSDK.TonConnect ({
     manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
 });
 
