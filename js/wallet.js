@@ -44,38 +44,31 @@ async function initTonConnect() {
 
 initTonConnect();
 
+// Функція для підключення гаманця
 async function connectWallet() {
     try {
-        const tonConnect = window.tonConnect;
-        if (!tonConnect) {
-            console.error("TonConnect не ініціалізовано!");
-            return;
-        }
-
         const wallets = await fetchWalletsList();
-        console.log("Доступні гаманці:", wallets);
+        const supportedWallet = wallets.find(w => w.jsBridgeKey);
 
-        // Шукаємо спочатку гаманець з jsBridgeKey, якщо немає - беремо з universalLink
-        let supportedWallet = wallets.find(w => w.jsBridgeKey) ||
-                              wallets.find(w => w.universalLink);
-
-        if (!supportedWallet) {
-            alert("Гаманці не підтримують підключення через TonConnect");
-            return;
-        }
-
-        // Підключаємося через відповідний ключ або універсальне посилання
-        if (supportedWallet.jsBridgeKey) {
+        if (supportedWallet) {
+            // Якщо гаманець підтримує `jsBridgeKey`, підключаємо через SDK
             await tonConnect.connect({ jsBridgeKey: supportedWallet.jsBridgeKey });
-        } else if (supportedWallet.universalLink) {
-            window.location.href = supportedWallet.universalLink;
+            console.log("Гаманець підключено:", tonConnect.account);
+        } else {
+            // Якщо немає jsBridgeKey – відкриваємо гаманець у новій вкладці
+            const walletToOpen = wallets.find(w => w.universalLink);
+            if (walletToOpen) {
+                window.open(walletToOpen.universalLink, "_blank");
+                console.log("Гаманець відкрито у новій вкладці:", walletToOpen.name);
+            } else {
+                alert("Гаманці не підтримують підключення через TonConnect");
+            }
         }
-
-        console.log("Гаманець підключено:", tonConnect.account);
     } catch (error) {
         console.error("Помилка підключення гаманця:", error);
     }
 }
+
 
 async function checkWalletConnection() {
     const tonConnect = window.tonConnect;
