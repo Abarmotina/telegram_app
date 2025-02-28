@@ -40,7 +40,7 @@ export async function connectWallet() {
         logMessage(`🔑 Отримано публічний ключ: ${publicKey}`);
 
         // **Створюємо об'єкт гаманця**
-        wallet = new tonweb.Wallets.all.v3R2({
+        wallet = new tonweb.wallet.create({
             publicKey: TonWeb.utils.hexToBytes(publicKey),
             workchain: 0
         });
