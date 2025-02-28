@@ -6,7 +6,9 @@
   "scripts": {
     "deploy": "npx wrangler deploy"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "@ton/core": "^0.60.1",
+    "ton": "^13.9.0"
+  },
   "private": true
 }

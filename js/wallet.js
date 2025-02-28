@@ -1,100 +1,52 @@
-async function fetchWalletsList() {
-    try {
-        const response = await fetch("https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets.json");
-        if (!response.ok) throw new Error("Failed to load wallets list");
-        const wallets = await response.json();
+import { TonClient, WalletContractV4, internal } from "@ton/core";
 
-        return wallets.map(w => ({
-            name: w.name,
-            image: w.image,
-            about: w.about_url || "No description available",
-            homepage: w.about_url || "https://ton.org",
-            bridge: w.bridge || [],
-            jsBridgeKey: w.jsBridgeKey || undefined,
-            universalLink: w.universal_url || undefined,
-            appName: w.app_name || undefined, // Додаємо app_name для перевірки Telegram Wallet
-        }));
-    } catch (error) {
-        console.error("Помилка завантаження списку гаманців:", error);
-        return [];
+const tonClient = new TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
+
+let wallet;
+
+// Ініціалізація гаманця через публічний ключ
+export async function initTelegramWallet(publicKey) {
+    if (!publicKey) {
+        console.error("Telegram Wallet publicKey не знайдено!");
+        return null;
     }
-}
-
-async function initTonConnect() {
-    while (!window.TonConnectSDK) {
-        console.log("Очікуємо завантаження TonConnectSDK...");
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    console.log("TonConnectSDK завантажено, ініціалізуємо TonConnect...");
-
-    const walletsList = await fetchWalletsList();
-    if (!walletsList || walletsList.length === 0) {
-        console.error("Список гаманців порожній або не завантажився!");
-        return;
-    }
-
-    const tonConnect = new window.TonConnectSDK.TonConnect({
-        manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json",
-        walletsList: { wallets: walletsList }
+    
+    wallet = WalletContractV4.create({
+        publicKey: Buffer.from(publicKey, 'hex'),
+        workchain: 0,
     });
-
-    window.tonConnect = tonConnect;
-    console.log("TonConnect успішно ініціалізовано!");
+    console.log("Telegram Wallet ініціалізовано!");
+    return wallet;
 }
 
-initTonConnect();
-
-async function connectWallet() {
-    try {
-        const tonConnect = window.tonConnect;
-        if (!tonConnect) {
-            console.error("TonConnect не ініціалізовано!");
-            return;
-        }
-
-        const wallets = await fetchWalletsList();
-        console.log("Доступні гаманці:", wallets);
-
-        // Шукаємо Telegram Wallet (app_name: "tonwallet")
-        let telegramWallet = wallets.find(w => w.appName === "tonwallet");
-
-        if (!telegramWallet) {
-            alert("Telegram Wallet не знайдено серед доступних гаманців!");
-            return;
-        }
-
-        console.log("Знайдено Telegram Wallet:", telegramWallet);
-
-        // Підключення через jsBridgeKey або universalLink
-        if (telegramWallet.jsBridgeKey) {
-            await tonConnect.connect({ jsBridgeKey: telegramWallet.jsBridgeKey });
-        } else if (telegramWallet.universalLink) {
-            window.location.href = telegramWallet.universalLink;
-        } else {
-            alert("Telegram Wallet не підтримує підключення через TonConnect!");
-        }
-
-        console.log("Гаманець підключено:", tonConnect.account);
-    } catch (error) {
-        console.error("Помилка підключення гаманця:", error);
+// Отримати баланс гаманця
+export async function getWalletBalance() {
+    if (!wallet) {
+        console.error("Гаманець не ініціалізований!");
+        return null;
     }
+    
+    const balance = await tonClient.getBalance(wallet.address);
+    console.log("Баланс гаманця:", balance / 10 ** 9, "TON");
+    return balance / 10 ** 9; // Перетворюємо в TON
 }
 
-async function checkWalletConnection() {
-    const tonConnect = window.tonConnect;
-    if (!tonConnect) {
-        console.error("TonConnect не ініціалізовано!");
+// Надсилання транзакції
+export async function sendTransaction(toAddress, amount) {
+    if (!wallet) {
+        console.error("Гаманець не ініціалізований!");
         return;
     }
-
-    const account = tonConnect.account;
-    if (account && account.address) {
-        console.log("Гаманець вже підключено:", account.address);
-    } else {
-        console.log("Гаманець не підключено");
-    }
+    
+    const seqno = await wallet.getSeqno(tonClient);
+    const transfer = wallet.createTransfer({
+        secretKey: "ПРИВАТНИЙ_КЛЮЧ", // Тут має бути підпис транзакції
+        to: toAddress,
+        amount: amount * 10 ** 9, // Перетворюємо з TON у нанотони
+        seqno,
+        payload: "Оплата у грі",
+    });
+    
+    await tonClient.sendExternalMessage(wallet, transfer);
+    console.log("Транзакція відправлена на адресу:", toAddress, "Сума:", amount, "TON");
 }
-
-// Експортуємо функції
-export { connectWallet, checkWalletConnection };
