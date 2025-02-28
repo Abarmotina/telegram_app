@@ -53,13 +53,23 @@ async function connectWallet() {
         }
 
         const wallets = await fetchWalletsList();
-        const supportedWallet = wallets.find(w => w.jsBridgeKey);
+        console.log("Доступні гаманці:", wallets);
+
+        // Шукаємо спочатку гаманець з jsBridgeKey, якщо немає - беремо з universalLink
+        let supportedWallet = wallets.find(w => w.jsBridgeKey) ||
+                              wallets.find(w => w.universalLink);
+
         if (!supportedWallet) {
             alert("Гаманці не підтримують підключення через TonConnect");
             return;
         }
 
-        await tonConnect.connect({ jsBridgeKey: supportedWallet.jsBridgeKey });
+        // Підключаємося через відповідний ключ або універсальне посилання
+        if (supportedWallet.jsBridgeKey) {
+            await tonConnect.connect({ jsBridgeKey: supportedWallet.jsBridgeKey });
+        } else if (supportedWallet.universalLink) {
+            window.location.href = supportedWallet.universalLink;
+        }
 
         console.log("Гаманець підключено:", tonConnect.account);
     } catch (error) {
