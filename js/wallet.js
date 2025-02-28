@@ -53,6 +53,11 @@ export async function connectWallet() {
         
 
         // **Створюємо об'єкт гаманця**
+        logMessage(`🛠 Перевірка отриманого ключа: "${publicKey}" (довжина: ${publicKey.length})`);
+        if (publicKey.length % 2 !== 0) {
+            logError("❌ Помилка: довжина публічного ключа НЕ є парною!");
+            return;
+        }
         wallet = new tonweb.wallet.create({
             publicKey: TonWeb.utils.hexToBytes(publicKey),
             workchain: 0
@@ -72,11 +77,30 @@ export async function connectWallet() {
 }
 
 
-// **Фейковий метод отримання публічного ключа (для тесту)**
-async function getPublicKeyFromTelegram(userId) {
-    // 🚨 ВАЖЛИВО: У реальному випадку цей ключ має бути отриманий через API Telegram Wallet
-    return "7a28e34d4b1b654d5db2d5b5b68d..." // 🔴 Фейковий публічний ключ (замінити на API-запит)
+async function getPublicKeyFromTelegram() {
+    try {
+        const response = await fetch("https://wallet.tg/api/user_key", {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+
+        const data = await response.json();
+
+        if (!data || !data.public_key) {
+            logError("❌ Не вдалося отримати публічний ключ з Telegram Wallet API!");
+            return null;
+        }
+
+        logMessage(`🔑 Отримано реальний публічний ключ: ${data.public_key}`);
+        return data.public_key;
+    } catch (error) {
+        logError("❌ Помилка при отриманні ключа з Telegram Wallet API: " + error.message);
+        return null;
+    }
 }
+
 
 // **Отримати баланс гаманця**
 export async function getWalletBalance() {
