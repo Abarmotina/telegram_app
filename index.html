@@ -30,15 +30,15 @@
     </div>
 
     <script type="module">
-        import { TonConnect } from "https://unpkg.com/@tonconnect/sdk@latest";
-        
+        import { TonConnect } from "https://cdn.jsdelivr.net/npm/@tonconnect/sdk@latest";
+    
         const tonConnect = new TonConnect({
             manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
         });
     
         window.tonConnect = tonConnect;
     </script>
-
+    
     <script type="module" src="js/game.js"></script>
     <script type="module" src="js/ui.js"></script>
     <script type="module" src="js/sounds.js"></script>
