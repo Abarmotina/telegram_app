@@ -32,15 +32,6 @@
     <!-- Підключаємо SDK як звичайний скрипт -->
     <script src="./libs/tonconnect-sdk.min.js"></script>
 
-    <script>
-        // Переконуємося, що TonConnect доступний у window
-        const tonConnect = new window.TonConnectSDK.TonConnect ({
-            manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
-        });
-
-        window.tonConnect = tonConnect;
-    </script>
-
     <script type="module" src="js/game.js"></script>
     <script type="module" src="js/ui.js"></script>
     <script type="module" src="js/sounds.js"></script>

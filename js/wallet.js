@@ -10,6 +10,14 @@ async function fetchWalletsList() {
 }
 
 async function initTonConnect() {
+    // Чекаємо, поки SDK буде доступний
+    while (!window.TonConnectSDK) {
+        console.log("Очікуємо завантаження TonConnectSDK...");
+        await new Promise(resolve => setTimeout(resolve, 100)); // Затримка 100 мс
+    }
+
+    console.log("TonConnectSDK завантажено, ініціалізуємо TonConnect...");
+
     const walletsList = await fetchWalletsList();
 
     const tonConnect = new window.TonConnectSDK.TonConnect({
@@ -18,6 +26,7 @@ async function initTonConnect() {
     });
 
     window.tonConnect = tonConnect;
+    console.log("TonConnect успішно ініціалізовано!");
 }
 
 initTonConnect();
