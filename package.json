@@ -2,7 +2,7 @@
   "name": "telegram-miniapp",
   "version": "1.0.0",
   "description": "Telegram Mini App for a card game",
-  "main": "main.html",
+  "main": "index.html",
   "scripts": {
     "deploy": "npx wrangler deploy"
   },

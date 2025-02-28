@@ -1,4 +1,5 @@
-import { TonClient, WalletContractV4, internal } from "@ton/core";
+import { TonClient, WalletContractV4, internal } from "../node_modules/@ton/core";
+
 
 const tonClient = new TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
 
