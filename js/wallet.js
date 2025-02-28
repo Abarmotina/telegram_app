@@ -11,6 +11,14 @@ function logMessage(message) {
     }
 }
 
+function logError(message) {
+    const logContainer = document.getElementById("debug-log");
+    if (logContainer) {
+        logContainer.innerHTML += `<p style="color:red;">❌ ${message}</p>`;
+    }
+}
+
+
 // **Функція для підключення гаманця**
 export async function connectWallet() {
     logMessage("🔄 Починаємо підключення гаманця...");
@@ -44,11 +52,17 @@ export async function connectWallet() {
             publicKey: TonWeb.utils.hexToBytes(publicKey),
             workchain: 0
         });
-
-        userAddress = await wallet.getAddress();
-        logMessage(`✅ Telegram Wallet підключено! Адреса: ${userAddress.toString(true, true, true)}`);
+        
+        try {
+            logMessage("🛠 Отримуємо адресу гаманця...");
+            userAddress = await wallet.getAddress();
+            logMessage(`✅ Адреса гаманця: ${userAddress.toString(true, true, true)}`);
+        } catch (err) {
+            logError("Помилка отримання адреси гаманця: " + err?.message);
+        }
     } catch (error) {
-        logMessage(`❌ Помилка підключення гаманця: ${error?.message || "невідома помилка"}`);
+        logError(`Помилка підключення гаманця: ${error?.message || "невідома помилка"}`);
+        logError(`Деталі: ${JSON.stringify(error)}`);
     }
 }
 
