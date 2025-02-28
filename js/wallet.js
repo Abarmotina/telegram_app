@@ -1,8 +1,12 @@
 async function fetchWalletsList() {
     try {
         const response = await fetch("https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets.json");
-        if (!response.ok) throw new Error("Failed to load wallets list");
-        return await response.json();
+        if (!response.ok) throw new Error(`Failed to load wallets list: ${response.status}`);
+
+        const data = await response.json();
+        console.log("Отриманий список гаманців:", data); // 🔹 Додаємо лог
+
+        return data;
     } catch (error) {
         console.error("Помилка завантаження списку гаманців:", error);
         return [];
