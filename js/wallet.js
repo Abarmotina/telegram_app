@@ -1,100 +1,100 @@
-// Ініціалізуємо TonWeb для mainnet
+// Р†РЅС–С†С–Р°Р»С–Р·СѓС”РјРѕ TonWeb РґР»СЏ mainnet
 const tonweb = new TonWeb();
 
 let wallet;
 let userAddress = null;
 
-// **Функція для підключення гаманця**
+// **Р¤СѓРЅРєС†С–СЏ РґР»СЏ РїС–РґРєР»СЋС‡РµРЅРЅСЏ РіР°РјР°РЅС†СЏ**
 export async function connectWallet() {
     try {
-        // **Перевіряємо, чи ініціалізовано Telegram Web App**
+        // **РџРµСЂРµРІС–СЂСЏС”РјРѕ, С‡Рё С–РЅС–С†С–Р°Р»С–Р·РѕРІР°РЅРѕ Telegram Web App**
         if (!window.Telegram || !window.Telegram.WebApp) {
-            console.error("? Telegram Web App не ініціалізовано!");
+            console.error("вќЊ Telegram Web App РЅРµ С–РЅС–С†С–Р°Р»С–Р·РѕРІР°РЅРѕ!");
             return;
         }
 
         if (!window.Telegram.WebApp.initDataUnsafe?.user) {
-            console.error("? Користувач не авторизований у Telegram Web App!");
+            console.error("вќЊ РљРѕСЂРёСЃС‚СѓРІР°С‡ РЅРµ Р°РІС‚РѕСЂРёР·РѕРІР°РЅРёР№ Сѓ Telegram Web App!");
             return;
         }
 
-        // Отримуємо ID користувача Telegram (він використовується для отримання публічного ключа)
+        // РћС‚СЂРёРјСѓС”РјРѕ ID РєРѕСЂРёСЃС‚СѓРІР°С‡Р° Telegram (РІС–РЅ РІРёРєРѕСЂРёСЃС‚РѕРІСѓС”С‚СЊСЃСЏ РґР»СЏ РѕС‚СЂРёРјР°РЅРЅСЏ РїСѓР±Р»С–С‡РЅРѕРіРѕ РєР»СЋС‡Р°)
         const tgUserId = window.Telegram.WebApp.initDataUnsafe.user.id;
-        console.log("? Telegram Web App ініціалізовано. ID користувача:", tgUserId);
+        console.log("вњ… Telegram Web App С–РЅС–С†С–Р°Р»С–Р·РѕРІР°РЅРѕ. ID РєРѕСЂРёСЃС‚СѓРІР°С‡Р°:", tgUserId);
 
-        // **Запитуємо публічний ключ користувача**
+        // **Р—Р°РїРёС‚СѓС”РјРѕ РїСѓР±Р»С–С‡РЅРёР№ РєР»СЋС‡ РєРѕСЂРёСЃС‚СѓРІР°С‡Р°**
         const publicKey = await getPublicKeyFromTelegram(tgUserId);
         if (!publicKey) {
-            console.error("? Не вдалося отримати публічний ключ Telegram Wallet!");
+            console.error("вќЊ РќРµ РІРґР°Р»РѕСЃСЏ РѕС‚СЂРёРјР°С‚Рё РїСѓР±Р»С–С‡РЅРёР№ РєР»СЋС‡ Telegram Wallet!");
             return;
         }
 
-        // **Створюємо об'єкт гаманця**
+        // **РЎС‚РІРѕСЂСЋС”РјРѕ РѕР±'С”РєС‚ РіР°РјР°РЅС†СЏ**
         wallet = new tonweb.wallet.all.v4({
             publicKey: TonWeb.utils.hexToBytes(publicKey),
             workchain: 0
         });
 
         userAddress = await wallet.getAddress();
-        console.log("? Telegram Wallet підключено! Адреса:", userAddress.toString(true, true, true));
+        console.log("вњ… Telegram Wallet РїС–РґРєР»СЋС‡РµРЅРѕ! РђРґСЂРµСЃР°:", userAddress.toString(true, true, true));
     } catch (error) {
-        console.error("? Помилка підключення гаманця:", error);
+        console.error("вќЊ РџРѕРјРёР»РєР° РїС–РґРєР»СЋС‡РµРЅРЅСЏ РіР°РјР°РЅС†СЏ:", error);
     }
 }
 
-// **Фейковий метод отримання публічного ключа (для тесту)**
+// **Р¤РµР№РєРѕРІРёР№ РјРµС‚РѕРґ РѕС‚СЂРёРјР°РЅРЅСЏ РїСѓР±Р»С–С‡РЅРѕРіРѕ РєР»СЋС‡Р° (РґР»СЏ С‚РµСЃС‚Сѓ)**
 async function getPublicKeyFromTelegram(userId) {
-    // ?? ВАЖЛИВО: У реальному випадку цей ключ має бути отриманий через API Telegram Wallet
-    return "7a28e34d4b1b654d5db2d5b5b68d..." // ?? Фейковий публічний ключ (замінити на API-запит)
+    // рџљЁ Р’РђР–Р›РР’Рћ: РЈ СЂРµР°Р»СЊРЅРѕРјСѓ РІРёРїР°РґРєСѓ С†РµР№ РєР»СЋС‡ РјР°С” Р±СѓС‚Рё РѕС‚СЂРёРјР°РЅРёР№ С‡РµСЂРµР· API Telegram Wallet
+    return "7a28e34d4b1b654d5db2d5b5b68d..." // рџ”ґ Р¤РµР№РєРѕРІРёР№ РїСѓР±Р»С–С‡РЅРёР№ РєР»СЋС‡ (Р·Р°РјС–РЅРёС‚Рё РЅР° API-Р·Р°РїРёС‚)
 }
 
-// **Отримати баланс гаманця**
+// **РћС‚СЂРёРјР°С‚Рё Р±Р°Р»Р°РЅСЃ РіР°РјР°РЅС†СЏ**
 export async function getWalletBalance() {
     if (!wallet || !userAddress) {
-        console.error("? Гаманець не підключено!");
+        console.error("вќЊ Р“Р°РјР°РЅРµС†СЊ РЅРµ РїС–РґРєР»СЋС‡РµРЅРѕ!");
         return null;
     }
 
     try {
         const balance = await tonweb.getBalance(userAddress);
-        console.log("?? Баланс гаманця:", TonWeb.utils.fromNano(balance), "TON");
+        console.log("рџ’° Р‘Р°Р»Р°РЅСЃ РіР°РјР°РЅС†СЏ:", TonWeb.utils.fromNano(balance), "TON");
         return TonWeb.utils.fromNano(balance);
     } catch (error) {
-        console.error("? Помилка отримання балансу:", error);
+        console.error("вќЊ РџРѕРјРёР»РєР° РѕС‚СЂРёРјР°РЅРЅСЏ Р±Р°Р»Р°РЅСЃСѓ:", error);
         return null;
     }
 }
 
-// **Надсилання транзакції**
+// **РќР°РґСЃРёР»Р°РЅРЅСЏ С‚СЂР°РЅР·Р°РєС†С–С—**
 export async function sendTransaction(toAddress, amount) {
     if (!wallet || !userAddress) {
-        console.error("? Гаманець не підключено!");
+        console.error("вќЊ Р“Р°РјР°РЅРµС†СЊ РЅРµ РїС–РґРєР»СЋС‡РµРЅРѕ!");
         return;
     }
 
     try {
         const seqno = await wallet.methods.seqno().call();
         const transfer = wallet.methods.transfer({
-            secretKey: new Uint8Array([]), // ? Тут має бути підпис користувача
+            secretKey: new Uint8Array([]), // вќ— РўСѓС‚ РјР°С” Р±СѓС‚Рё РїС–РґРїРёСЃ РєРѕСЂРёСЃС‚СѓРІР°С‡Р°
             toAddress: toAddress,
             amount: TonWeb.utils.toNano(amount),
             seqno
         });
 
         await transfer.send();
-        console.log(`? Транзакція відправлена: ${amount} TON ? ${toAddress}`);
+        console.log(`вњ… РўСЂР°РЅР·Р°РєС†С–СЏ РІС–РґРїСЂР°РІР»РµРЅР°: ${amount} TON в†’ ${toAddress}`);
     } catch (error) {
-        console.error("? Помилка відправки транзакції:", error);
+        console.error("вќЊ РџРѕРјРёР»РєР° РІС–РґРїСЂР°РІРєРё С‚СЂР°РЅР·Р°РєС†С–С—:", error);
     }
 }
 
-// **Перевірити підключення гаманця**
+// **РџРµСЂРµРІС–СЂРёС‚Рё РїС–РґРєР»СЋС‡РµРЅРЅСЏ РіР°РјР°РЅС†СЏ**
 export function checkWalletConnection() {
     if (userAddress) {
-        console.log("? Гаманець підключено:", userAddress.toString(true, true, true));
+        console.log("вњ… Р“Р°РјР°РЅРµС†СЊ РїС–РґРєР»СЋС‡РµРЅРѕ:", userAddress.toString(true, true, true));
         return userAddress.toString(true, true, true);
     } else {
-        console.log("? Гаманець не підключено");
+        console.log("вќЊ Р“Р°РјР°РЅРµС†СЊ РЅРµ РїС–РґРєР»СЋС‡РµРЅРѕ");
         return null;
     }
 }
