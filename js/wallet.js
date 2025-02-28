@@ -45,7 +45,12 @@ export async function connectWallet() {
             logMessage("❌ Не вдалося отримати публічний ключ Telegram Wallet!");
             return;
         }
+        if (!publicKey || publicKey.length % 2 !== 0) {
+            logError("❌ Некоректний публічний ключ! Довжина має бути парною.");
+            return;
+        }
         logMessage(`🔑 Отримано публічний ключ: ${publicKey}`);
+        
 
         // **Створюємо об'єкт гаманця**
         wallet = new tonweb.wallet.create({
