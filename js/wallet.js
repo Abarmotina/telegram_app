@@ -1,5 +1,5 @@
 // Ініціалізуємо TON Connect
-const tonConnect = new TonConnect({
+const tonConnect = new window.TonConnect({
     manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
 });
 
@@ -32,4 +32,4 @@ async function checkWalletConnection() {
 }
 
 // Експортуємо функції
-export { connectWallet, checkWalletConnection };
+export { connectWallet, checkWalletConnection, tonConnect };
