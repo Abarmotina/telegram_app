@@ -1,5 +1,4 @@
-import { Address, fromNano, beginCell } from "../libs/ton-core/core/dist/index.js";
-import { TonClient4 } from "https://cdn.jsdelivr.net/npm/@ton/ton@latest/dist/index.js"; 
+import { TonClient4, Address, fromNano, beginCell } from "https://cdn.jsdelivr.net/npm/@ton/ton@latest/dist/index.js"; 
 
 // Ініціалізуємо TonClient для роботи з mainnet
 const client = new TonClient4({
