@@ -44,38 +44,38 @@ async function initTonConnect() {
 
 initTonConnect();
 
-// Функція для підключення гаманця (з додатковими логами)
 async function connectWallet() {
     try {
-        console.log("Запуск connectWallet...");
+        const tonConnect = window.tonConnect;
+        if (!tonConnect) {
+            console.error("TonConnect не ініціалізовано!");
+            return;
+        }
 
         const wallets = await fetchWalletsList();
-        console.log("Отриманий список гаманців:", wallets);
+        console.log("Доступні гаманці:", wallets);
 
-        const supportedWallet = wallets.find(w => w.jsBridgeKey);
-        console.log("Знайдено підтримуваний гаманець:", supportedWallet);
+        // Шукаємо спочатку гаманець з jsBridgeKey, якщо немає - беремо з universalLink
+        let supportedWallet = wallets.find(w => w.jsBridgeKey) ||
+                              wallets.find(w => w.universalLink);
 
-        if (supportedWallet) {
-            console.log("Підключаємося через TonConnect...");
-            await tonConnect.connect({ jsBridgeKey: supportedWallet.jsBridgeKey });
-            console.log("Гаманець підключено:", tonConnect.account);
-        } else {
-            console.log("Немає гаманця з jsBridgeKey, пробуємо universalLink...");
-
-            const walletToOpen = wallets.find(w => w.universalLink);
-            if (walletToOpen) {
-                console.log(`Відкриваємо ${walletToOpen.name}:`, walletToOpen.universalLink);
-                window.open(walletToOpen.universalLink, "_blank");
-            } else {
-                alert("Гаманці не підтримують підключення через TonConnect");
-                console.log("Не знайдено жодного гаманця для підключення.");
-            }
+        if (!supportedWallet) {
+            alert("Гаманці не підтримують підключення через TonConnect");
+            return;
         }
+
+        // Підключаємося через відповідний ключ або універсальне посилання
+        if (supportedWallet.jsBridgeKey) {
+            await tonConnect.connect({ jsBridgeKey: supportedWallet.jsBridgeKey });
+        } else if (supportedWallet.universalLink) {
+            window.location.href = supportedWallet.universalLink;
+        }
+
+        console.log("Гаманець підключено:", tonConnect.account);
     } catch (error) {
         console.error("Помилка підключення гаманця:", error);
     }
 }
-
 
 async function checkWalletConnection() {
     const tonConnect = window.tonConnect;
