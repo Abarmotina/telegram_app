@@ -39,6 +39,14 @@ export async function connectWallet() {
         }
         logMessage(`🔑 Отримано публічний ключ: ${publicKey}`);
 
+        // 🔎 Додано перевірку `tonweb.wallet.all.v4`
+        if (!tonweb.wallet || !tonweb.wallet.all || !tonweb.wallet.all.v4) {
+            logMessage("❌ tonweb.wallet.all.v4 НЕ існує! Ймовірно, проблема в бібліотеці TonWeb.");
+            return;
+        } else {
+            logMessage("✅ tonweb.wallet.all.v4 існує, створюємо гаманець...");
+        }
+
         // **Створюємо об'єкт гаманця**
         wallet = new tonweb.wallet.all.v4({
             publicKey: TonWeb.utils.hexToBytes(publicKey),
@@ -48,9 +56,10 @@ export async function connectWallet() {
         userAddress = await wallet.getAddress();
         logMessage(`✅ Telegram Wallet підключено! Адреса: ${userAddress.toString(true, true, true)}`);
     } catch (error) {
-        logMessage(`❌ Помилка підключення гаманця: ${error.message}`);
+        logMessage(`❌ Помилка підключення гаманця: ${error?.message || "невідома помилка"}`);
     }
 }
+
 
 // **Фейковий метод отримання публічного ключа (для тесту)**
 async function getPublicKeyFromTelegram(userId) {
