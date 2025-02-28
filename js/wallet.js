@@ -60,4 +60,4 @@ async function checkWalletConnection() {
 }
 
 // Експортуємо функції
-export { connectWallet, checkWalletConnection, tonConnect };
+export { connectWallet, checkWalletConnection };
