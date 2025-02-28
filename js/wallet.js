@@ -1,7 +1,5 @@
-import * as TonWeb from "https://cdn.jsdelivr.net/npm/tonweb@0.0.49/dist/tonweb.js";
-
 // Ініціалізуємо TonWeb для mainnet
-const tonweb = new TonWeb.TonWeb("https://toncenter.com/api/v2/jsonRPC");
+const tonweb = new TonWeb();
 
 let wallet;
 let userAddress = null;
