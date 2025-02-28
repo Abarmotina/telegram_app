@@ -1,10 +1,7 @@
-import { TonClient4, fromNano, beginCell } from "https://cdn.jsdelivr.net/npm/@ton/ton@latest/dist/index.js"; 
-import { Address } from "https://cdn.jsdelivr.net/npm/@ton/core@latest/dist/index.js";
+import TonWeb from "https://cdn.jsdelivr.net/npm/tonweb@latest/dist/tonweb.min.js";
 
-// Ініціалізуємо TonClient для роботи з mainnet
-const client = new TonClient4({
-    endpoint: "https://mainnet-v4.tonhubapi.com",
-});
+// Ініціалізуємо TonWeb з mainnet
+const tonweb = new TonWeb(new TonWeb.HttpProvider("https://toncenter.com/api/v2/jsonRPC"));
 
 let wallet;
 
@@ -16,13 +13,12 @@ export async function initTelegramWallet(publicKey) {
     }
 
     // Створюємо об'єкт адреси гаманця
-    const address = Address.parse(publicKey);
-    wallet = {
-        address,
-        client
-    };
+    wallet = new tonweb.wallet.all.v4({
+        publicKey: TonWeb.utils.hexToBytes(publicKey),
+        workchain: 0
+    });
 
-    console.log("Telegram Wallet ініціалізовано!", address.toString());
+    console.log("Telegram Wallet ініціалізовано!", wallet.address.toString(true, true, true));
     return wallet;
 }
 
@@ -34,9 +30,9 @@ export async function getWalletBalance() {
     }
 
     try {
-        const balance = await client.getBalance(wallet.address);
-        console.log("Баланс гаманця:", fromNano(balance), "TON");
-        return fromNano(balance); // Перетворюємо в TON
+        const balance = await tonweb.getBalance(wallet.address);
+        console.log("Баланс гаманця:", TonWeb.utils.fromNano(balance), "TON");
+        return TonWeb.utils.fromNano(balance);
     } catch (error) {
         console.error("Помилка отримання балансу:", error);
         return null;
@@ -51,14 +47,16 @@ export async function sendTransaction(toAddress, amount) {
     }
 
     try {
-        const transaction = await client.sendTransaction({
-            to: Address.parse(toAddress),
-            value: amount * 10 ** 9, // Перетворюємо з TON у нанотони
-            payload: beginCell().storeString("Оплата у грі").endCell(),
+        const seqno = await wallet.methods.seqno().call();
+        const transfer = wallet.methods.transfer({
+            secretKey: new Uint8Array([]), // Тут має бути приватний ключ користувача
+            toAddress: toAddress,
+            amount: TonWeb.utils.toNano(amount),
+            seqno
         });
 
-        console.log("Транзакція відправлена!", transaction);
-        return transaction;
+        await transfer.send();
+        console.log("Транзакція відправлена!", toAddress, "на", amount, "TON");
     } catch (error) {
         console.error("Помилка відправки транзакції:", error);
     }
@@ -67,8 +65,8 @@ export async function sendTransaction(toAddress, amount) {
 // Перевірити підключення гаманця
 export function checkWalletConnection() {
     if (wallet && wallet.address) {
-        console.log("Гаманець підключено:", wallet.address.toString());
-        return wallet.address.toString();
+        console.log("Гаманець підключено:", wallet.address.toString(true, true, true));
+        return wallet.address.toString(true, true, true);
     } else {
         console.log("Гаманець не підключено");
         return null;
