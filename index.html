@@ -30,9 +30,9 @@
     </div>
 
     <script type="module">
-        window.global = window;
+        window.global = window.globalThis;
 
-        import { TonConnect } from "https://esm.sh/@tonconnect/sdk@0.0.40?bundle";
+        import { TonConnect } from "https://esm.sh/@tonconnect/sdk?bundle&target=browser";
     
         const tonConnect = new TonConnect({
             manifestUrl: "https://Abarmotina.github.io/telegram_app/tonconnect-manifest.json"
