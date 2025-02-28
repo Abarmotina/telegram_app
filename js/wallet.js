@@ -1,4 +1,4 @@
-import { TonWeb } from "https://cdn.jsdelivr.net/npm/tonweb@0.0.49/dist/tonweb.js";
+const TonWeb = window.TonWeb || (await import("https://cdn.jsdelivr.net/npm/tonweb@0.0.49/dist/tonweb.js")).default;
 
 // Ініціалізуємо TonWeb для mainnet
 const tonweb = new TonWeb(new TonWeb.HttpProvider("https://toncenter.com/api/v2/jsonRPC"));
