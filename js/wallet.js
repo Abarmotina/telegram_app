@@ -96,7 +96,7 @@ async function getPublicKeyFromTelegram() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${initData}`  // ✅ Передаємо `initData` в заголовок, а не body!
+                "Authorization": `Bearer ${window.Telegram.WebApp.initData}`  // ✅ Передаємо `initData` в заголовок, а не body!
             }
         });
         
